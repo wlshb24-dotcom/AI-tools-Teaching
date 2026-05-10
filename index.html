@@ -10,10 +10,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            /* 更具質感的漸層背景 */
             background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f3f8ff 100%);
             background-attachment: fixed;
+            overflow-x: hidden;
         }
+        
+        /* 卡片與動畫設定 */
         .task-card {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -34,8 +36,6 @@
             opacity: 0.6;
             transition: all 0.3s ease;
         }
-        
-        /* 自訂核取方塊的動畫 */
         .task-checkbox:checked {
             animation: pop 0.3s ease-in-out;
         }
@@ -44,38 +44,40 @@
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
-        
         .progress-transition {
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* 頁面切換動畫 */
+        .fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        .fade-out { animation: fadeOut 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 text-gray-800">
+<body class="min-h-screen text-gray-800">
 
-    <div class="max-w-4xl mx-auto space-y-8 relative">
-        
-        <!-- Header & Timer Section -->
-        <header class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-sm border border-blue-100 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <!-- 裝飾用光暈 -->
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-            
-            <div class="flex-1 w-full relative z-10">
-                <h1 class="text-3xl font-extrabold text-gray-900 flex items-center gap-3 tracking-tight">
-                    <div class="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-                        <i data-lucide="sparkles" class="w-6 h-6"></i>
-                    </div>
-                    AI 實戰研習任務版
-                </h1>
-                <p class="text-gray-500 mt-2 font-medium">請選擇您的組別，並在時限內依序完成以下任務。</p>
+    <!-- ================= 封面頁 (Cover Page) ================= -->
+    <div id="cover-page" class="min-h-screen flex items-center justify-center p-4 relative z-20">
+        <!-- 背景裝飾 -->
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-300 rounded-full blur-[80px] opacity-40 -z-10"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-300 rounded-full blur-[100px] opacity-30 -z-10"></div>
+
+        <div class="bg-white/80 backdrop-blur-xl border border-white p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg w-full text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl shadow-lg mb-6">
+                <i data-lucide="bot" class="w-12 h-12 text-white"></i>
             </div>
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">AI 教學實踐實戰</h1>
+            <p class="text-gray-500 font-medium mb-8">Gemini 創意生成與 NotebookLM 知識管理</p>
             
-            <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto relative z-10">
-                <div class="relative w-full sm:w-48">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <i data-lucide="users" class="w-4 h-4 text-gray-400"></i>
+            <div class="space-y-4 text-left">
+                <label class="block text-sm font-bold text-gray-700">第一步：請選擇您的組別</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <i data-lucide="users" class="w-5 h-5 text-gray-400"></i>
                     </div>
-                    <select id="group-select" class="bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 font-bold shadow-sm transition-colors hover:border-blue-300 appearance-none cursor-pointer">
-                        <option value="" disabled selected>請選擇您的組別</option>
+                    <select id="cover-group-select" class="bg-gray-50 border-2 border-gray-200 text-gray-900 text-lg rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-12 p-4 font-bold transition hover:border-blue-300 cursor-pointer appearance-none">
+                        <option value="" disabled selected>點此選擇組別...</option>
                         <option value="語文組">語文組</option>
                         <option value="數理組">數理組 (含數學/自然)</option>
                         <option value="社會組">社會組</option>
@@ -84,17 +86,46 @@
                         <option value="日常組">日常組 (生活旅遊應用)</option>
                     </select>
                 </div>
+                <button id="enter-btn" class="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2 text-lg">
+                    進入任務面板
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="mt-8 text-xs text-gray-400 font-medium bg-gray-50 p-3 rounded-lg">
+                💡 提示：進入面板後，若操作遇到困難，隨時可點擊卡片右上角的「求救」按鈕。
+            </div>
+        </div>
+    </div>
 
-                <div class="bg-white border-2 border-blue-100 shadow-sm rounded-xl px-5 py-2.5 flex items-center gap-4 w-full sm:w-auto">
-                    <i data-lucide="timer" class="w-5 h-5 text-blue-600 animate-pulse"></i>
-                    <span id="timer-display" class="text-2xl font-black text-blue-700 font-mono tracking-widest">25:00</span>
-                    <button id="timer-btn" class="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 hover:shadow-md transition-all font-bold">開始</button>
+    <!-- ================= 任務面板 (Main App - 預設隱藏) ================= -->
+    <div id="main-app" class="hidden max-w-4xl mx-auto space-y-8 relative p-4 md:p-8">
+        
+        <!-- Header & Timer Section -->
+        <header class="bg-white/90 backdrop-blur-lg rounded-2xl shadow-sm border border-blue-100 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+            
+            <div class="flex-1 w-full relative z-10">
+                <div class="flex items-center gap-3 mb-2">
+                    <span id="display-group-badge" class="bg-blue-100 text-blue-800 text-sm font-black px-3 py-1 rounded-full shadow-sm border border-blue-200">
+                        未選擇組別
+                    </span>
+                </div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">AI 實戰任務檢核</h1>
+                <p class="text-gray-500 mt-2 font-medium">請在時限內依序完成任務。卡關時請點擊「求救」按鈕。</p>
+            </div>
+            
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="bg-white border-2 border-blue-100 shadow-sm rounded-xl px-5 py-3 flex items-center gap-4">
+                    <i data-lucide="timer" class="w-6 h-6 text-blue-600 animate-pulse"></i>
+                    <span id="timer-display" class="text-3xl font-black text-blue-700 font-mono tracking-widest">25:00</span>
+                    <button id="timer-btn" class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 hover:shadow-md transition-all font-bold">開始</button>
                 </div>
             </div>
         </header>
 
         <!-- 進度條 -->
-        <div class="bg-white/60 p-4 rounded-2xl border border-gray-200 shadow-sm backdrop-blur-sm flex items-center gap-4">
+        <div class="bg-white/80 p-4 rounded-2xl border border-gray-200 shadow-sm backdrop-blur-sm flex items-center gap-4 sticky top-4 z-30">
             <span class="text-sm font-bold text-gray-500 whitespace-nowrap">任務進度</span>
             <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full progress-transition" style="width: 0%"></div>
@@ -103,150 +134,328 @@
         </div>
 
         <!-- Tasks Section -->
-        <main class="space-y-4 relative z-10" id="task-list">
+        <main class="space-y-5 relative z-10" id="task-list">
+            
             <!-- 任務 1 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer relative overflow-hidden group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 1：指令金律與語氣調整</h3>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold shadow-sm">核心教學 1, 3</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 1：指令金律與語氣調整</h3>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold shadow-sm hidden sm:inline-block">教學 1, 3</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="1">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">請依據您的組別屬性，輸入包含「角色、對象、目標」的指令，並使用 Canvas 功能調整一段文字的語氣。</p>
-                    <div id="task1-hint" class="mt-3 text-sm text-indigo-800 bg-indigo-50 border border-indigo-200 p-4 rounded-xl hidden shadow-inner flex gap-2">
-                        <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0 text-indigo-500"></i>
-                        <span class="font-medium" id="task1-hint-text"></span>
+                    <p class="text-gray-600 task-desc font-medium">請依據您的組別屬性，輸入包含「角色、對象、目標」的指令，並使用 Canvas 功能調整一段文字的語氣。</p>
+                    <div id="task1-hint" class="mt-4 text-sm text-indigo-800 bg-indigo-50 border border-indigo-200 p-4 rounded-xl hidden shadow-inner flex gap-3">
+                        <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0 text-indigo-500 mt-0.5"></i>
+                        <span class="font-bold leading-relaxed" id="task1-hint-text"></span>
                     </div>
                 </div>
             </label>
 
             <!-- 任務 2 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 2：雲端聯動與匯出</h3>
-                        <span class="text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold shadow-sm">串聯教學 2</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 2：雲端聯動與匯出</h3>
+                            <span class="text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold shadow-sm hidden sm:inline-block">教學 2</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="2">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">將任務 1 所產出的內容，點選畫面下方的「分享與匯出」，一鍵轉存為 Google 文件。</p>
+                    <p class="text-gray-600 task-desc font-medium">將任務 1 所產出的內容，轉存為 Google 文件。</p>
                 </div>
             </label>
 
             <!-- 任務 3 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 3：建立 NotebookLM 知識庫</h3>
-                        <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm">進階教學 1, 2</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 3：建立 NotebookLM 知識庫</h3>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm hidden sm:inline-block">教學 1, 2</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="3">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">開啟 NotebookLM，建立新筆記本並「匯入剛才產出的 Google 文件」，隨後要求 AI 生成一份研習指南或摘要。</p>
+                    <p class="text-gray-600 task-desc font-medium">開啟 NotebookLM，建立新筆記本並「匯入剛才產出的 Google 文件」。</p>
                 </div>
             </label>
 
             <!-- 任務 4 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 4：AI 工作室多媒體產出</h3>
-                        <span class="text-xs bg-pink-100 text-pink-800 px-3 py-1 rounded-full font-bold shadow-sm">進階教學 2</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 4：AI 工作室多媒體產出</h3>
+                            <span class="text-xs bg-pink-100 text-pink-800 px-3 py-1 rounded-full font-bold shadow-sm hidden sm:inline-block">教學 2</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="4">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">在 NotebookLM 的工作室指南面板中，將您的文件一鍵轉換為令人驚豔的「音訊摘要 (Audio Overview) Podcast」或「練習卡 (Flashcards)」。</p>
+                    <p class="text-gray-600 task-desc font-medium">在 NotebookLM 中，將文件轉換為「音訊摘要 Podcast」或「練習卡」。</p>
                 </div>
             </label>
 
             <!-- 任務 5 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 5：客製化專屬 Gem 分身</h3>
-                        <span class="text-xs bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-bold shadow-sm">客製教學 4</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 5：客製化專屬 Gem 分身</h3>
+                            <span class="text-xs bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-bold shadow-sm hidden sm:inline-block">教學 4</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="5">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">在 Gemini 畫面左側選單建立一個該組「專屬的 Gem 助理」，並設定其系統指令與回應風格。</p>
-                    <div id="task5-hint" class="mt-3 text-sm text-orange-800 bg-orange-50 border border-orange-200 p-4 rounded-xl hidden shadow-inner flex gap-2">
-                        <i data-lucide="bot" class="w-5 h-5 flex-shrink-0 text-orange-500"></i>
-                        <span class="font-medium" id="task5-hint-text"></span>
+                    <p class="text-gray-600 task-desc font-medium">在 Gemini 建立一個該組「專屬的 Gem 助理」，並設定其系統指令。</p>
+                    <div id="task5-hint" class="mt-4 text-sm text-orange-800 bg-orange-50 border border-orange-200 p-4 rounded-xl hidden shadow-inner flex gap-3">
+                        <i data-lucide="bot" class="w-5 h-5 flex-shrink-0 text-orange-500 mt-0.5"></i>
+                        <span class="font-bold leading-relaxed" id="task5-hint-text"></span>
                     </div>
                 </div>
             </label>
 
             <!-- 任務 6 -->
             <label class="task-card flex items-start gap-5 p-6 bg-white border-2 border-transparent rounded-2xl shadow-sm cursor-pointer group">
-                <div class="mt-1">
+                <div class="mt-1 flex-shrink-0">
                     <input type="checkbox" class="w-6 h-6 text-blue-600 bg-gray-50 border-2 border-gray-300 rounded focus:ring-blue-500 task-checkbox transition-all cursor-pointer">
                 </div>
-                <div class="flex-1">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <h3 class="text-xl font-bold text-gray-800 task-title">任務 6：跨平台整合驗證</h3>
-                        <span class="text-xs bg-slate-100 text-slate-800 px-3 py-1 rounded-full font-bold shadow-sm border border-slate-300">整合應用總結</span>
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 task-title">任務 6：跨平台整合驗證</h3>
+                            <span class="text-xs bg-slate-100 text-slate-800 px-3 py-1 rounded-full font-bold shadow-sm border border-slate-300 hidden sm:inline-block">整合應用</span>
+                        </div>
+                        <button type="button" class="sos-btn flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white px-3 py-1 rounded-lg text-sm font-bold transition shadow-sm" data-task="6">
+                            <i data-lucide="life-buoy" class="w-4 h-4"></i> 求救
+                        </button>
                     </div>
-                    <p class="text-gray-600 mt-2 task-desc font-medium">回到 Gemini 視窗，輸入 <code class="bg-gray-100 px-2 py-1 rounded text-red-500 font-mono text-sm border border-gray-200 shadow-sm">@Google Drive</code> 搜尋剛才匯出的文件，並請 AI 根據該文件寫一段 Line 群組公告。</p>
+                    <p class="text-gray-600 task-desc font-medium">在對話框輸入 <code class="bg-gray-100 px-2 py-1 rounded text-red-500 font-mono text-sm border border-gray-200">@Google Drive</code> 搜尋剛才匯出的文件，寫一段群組公告。</p>
                 </div>
             </label>
         </main>
 
-        <!-- 任務全部完成的慶祝橫幅 (預設隱藏) -->
-        <div id="success-banner" class="hidden flex-col items-center justify-center p-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-xl text-white transform transition-all duration-500 scale-95 opacity-0">
+        <!-- 任務全部完成的慶祝橫幅 -->
+        <div id="success-banner" class="hidden flex-col items-center justify-center p-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-xl text-white transform transition-all duration-500 scale-95 opacity-0 mt-8">
             <div class="bg-white/20 p-4 rounded-full mb-4">
                 <i data-lucide="party-popper" class="w-12 h-12 text-yellow-300"></i>
             </div>
-            <h2 class="text-3xl font-black mb-2 tracking-wide">太棒了！研習任務全數達標！</h2>
+            <h2 class="text-3xl font-black mb-2 tracking-wide text-center">太棒了！研習任務全數達標！</h2>
             <p class="text-green-100 font-medium text-lg text-center">您已完整體驗 AI 的強大工作流，請保留此畫面並給自己一個掌聲。</p>
         </div>
+    </div>
 
+    <!-- ================= SOS 求救提示互動視窗 (Modal) ================= -->
+    <div id="help-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform scale-95 transition-transform" id="help-modal-content">
+            <!-- Modal Header -->
+            <div class="bg-rose-50 border-b border-rose-100 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-black text-rose-700 flex items-center gap-2">
+                    <i data-lucide="life-buoy" class="w-6 h-6"></i>
+                    操作求救指南
+                </h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6 md:p-8" id="help-body">
+                <!-- 內容由 JS 動態注入 -->
+            </div>
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 text-right">
+                <button id="close-modal-btn" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-6 rounded-xl transition">
+                    了解，我來試試看！
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 初始化 Lucide 圖示
         lucide.createIcons();
 
-        // 任務 1 動態建議資料 (依據需求更新)
+        // --- 講義步驟內容資料庫 (對應六大任務) ---
+        const helpContents = {
+            "1": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">Canvas (畫布) 功能操作</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>在 Gemini 對話框下達您的情境指令。</li>
+                    <li>當要求產出長文時，右側會自動跳出一個獨立編輯視窗（Canvas）。</li>
+                    <li><strong class="text-blue-600">不要重寫 Prompt！</strong> 請直接在畫布上反白選取您想修改的文字。</li>
+                    <li>使用浮現的工具列進行「改寫」、「調整長度」或「調整語氣」。</li>
+                </ol>`,
+            "2": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">分享與轉存文件</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>在 Gemini 產出內容的下方，找到 <strong class="text-gray-900">分享與匯出</strong> 的圖示（通常在讚/倒讚旁邊）。</li>
+                    <li>點擊後選擇 <strong class="text-blue-600">匯出至 Google 文件</strong>。</li>
+                    <li>系統會在您的 Google 雲端硬碟主資料夾最上層自動建立該檔案。</li>
+                </ol>`,
+            "3": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">NotebookLM 匯入來源</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>開啟新分頁前往 <strong class="text-blue-600">notebooklm.google.com</strong>。</li>
+                    <li>點選建立「新的筆記本」。</li>
+                    <li>在「新增來源」選單中，選擇 <strong class="text-gray-900">Google 雲端硬碟</strong>。</li>
+                    <li>搜尋並勾選您在「任務 2」剛存好的那份 Google 文件即可匯入。</li>
+                </ol>`,
+            "4": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">工作室多媒體產出</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>在 NotebookLM 筆記本畫面中，找到右側/右下角的 <strong class="text-purple-600">工作室指南 (Studio/Guide)</strong>。</li>
+                    <li>若要生成對談 Podcast，點選 <strong class="text-gray-900">音訊摘要 (Audio Overview)</strong> 右側的生成按鈕。</li>
+                    <li>或者向下捲動，點擊生成目錄、常見問題或 <strong class="text-blue-600">練習卡 (Flashcards)</strong>。</li>
+                </ol>`,
+            "5": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">自訂 Gem 專屬分身</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>回到 Gemini 網頁，展開左側選單（點擊左上角三條線）。</li>
+                    <li>點擊 <strong class="text-orange-600">Gem 專屬分身 (Gems)</strong> 或「建立新的 Gem」。</li>
+                    <li>輸入名稱（例如：作文批改專家）。</li>
+                    <li>在「操作說明 / System prompt」框中，貼上我們提供的設定指令並儲存。</li>
+                </ol>`,
+            "6": `
+                <h4 class="font-bold text-lg text-gray-800 mb-3 border-b pb-2">@Workspace 擴充功能呼叫</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 font-medium leading-relaxed">
+                    <li>在 Gemini 的對話輸入框中，輸入 <strong class="text-red-500 font-mono">@</strong> 符號。</li>
+                    <li>選擇或打出 <strong class="text-blue-600">Google Docs</strong> 或 <strong class="text-blue-600">Google Drive</strong>。</li>
+                    <li>接著輸入關鍵字找回舊檔案，例如：「@Google Docs 打開那份研習草稿，幫我寫一段群組公告」。</li>
+                </ol>
+                <div class="mt-4 p-3 bg-amber-50 text-amber-800 text-sm rounded border border-amber-200">
+                    <strong class="block mb-1">🚩 無法呼叫 @ 怎麼辦？</strong>
+                    請點擊左下角「設定 > 擴充功能」，確認「Google Workspace」開關已開啟。
+                </div>`
+        };
+
+        // --- 動態提示資料庫 ---
         const groupHints = {
-            "語文組": "專屬任務建議：請輸入指令批改下方作文，並給予建議。",
-            "數理組": "專屬任務建議：請輸入指令設計酸鹼中和滴定實驗紀錄表，或是針對「三角函數」設計引導式提問教學。",
-            "社會組": "專屬任務建議：請輸入指令設計高中地理「地形系統」的戶外考察學習單與地圖判讀指引。",
-            "行政組": "專屬任務建議：請輸入指令將長篇教育局來文摘要成 3 個重點，並擬定一段發給全校老師的 Line 群組公告。",
-            "輔導組": "專屬任務建議：請輸入指令整理拒學傾向個案紀錄並擬定親師溝通語句。",
-            "日常組": "專屬任務建議：請輸入指令為自己規劃一趟 3 天 2 夜的日本京阪神自由行，包含每日行程與當地交通預算估算。"
+            "語文組": "✨ 【專屬任務建議】請輸入指令批改下方作文（使用您複製的範例），並用 Canvas 功能調整回饋語氣。",
+            "數理組": "✨ 【專屬任務建議】請輸入指令設計酸鹼中和滴定實驗紀錄表，或是針對「三角函數」設計引導式提問教學。",
+            "社會組": "✨ 【專屬任務建議】請輸入指令設計高中地理「地形系統」的戶外考察學習單與地圖判讀指引。",
+            "行政組": "✨ 【專屬任務建議】請輸入指令將長篇教育局來文摘要成 3 個重點，並擬定一段發給全校老師的 Line 群組公告。",
+            "輔導組": "✨ 【專屬任務建議】請輸入指令整理拒學傾向個案紀錄，並擬定溫暖的親師溝通語句。",
+            "日常組": "✨ 【專屬任務建議】請輸入指令為自己規劃一趟 3 天 2 夜的日本京阪神自由行，包含每日行程與預算估算。"
         };
 
-        // 任務 5 Gem分身動態建議資料 (新增功能)
         const gemHints = {
-            "語文組": "專屬 Gem 建議：建立一位「資深國文/英文作文閱卷老師」，設定其語氣嚴謹且能精準點出學生的寫作盲點與修辭建議。",
-            "數理組": "專屬 Gem 建議：建立一位「蘇格拉底數理導師」，設定其絕對不直接給出最終答案，而是利用提問一步步引導學生思考。",
-            "社會組": "專屬 Gem 建議：建立一位「資深戶外考察地理嚮導」，設定其熟悉各地地形地貌與人文歷史發展，能隨時補充課外知識。",
-            "行政組": "專屬 Gem 建議：建立一位「公文翻譯翻譯機」，設定其能將文言文或生硬的公部門用語，自動轉換為活潑親切的白話文公告。",
-            "輔導組": "專屬 Gem 建議：建立一位「同理心溝通教練」，設定其語氣溫暖包容，能提供具體的輔導策略與親師對話鷹架。",
-            "日常組": "專屬 Gem 建議：建立一位「精打細算旅遊達人」，設定其專精於各國交通票券規則與在地隱藏版美食推薦。"
+            "語文組": "🤖 【Gem 設定建議】建立「資深國文/英文作文閱卷老師」，設定其語氣嚴謹且能精準點出盲點。",
+            "數理組": "🤖 【Gem 設定建議】建立「蘇格拉底數理導師」，設定不給直接答案，利用提問引導思考。",
+            "社會組": "🤖 【Gem 設定建議】建立「戶外考察地理嚮導」，設定熟悉各地地形地貌，能補充課外知識。",
+            "行政組": "🤖 【Gem 設定建議】建立「公文翻譯機」，設定將生硬公文轉換為活潑的白話文公告。",
+            "輔導組": "🤖 【Gem 設定建議】建立「同理心溝通教練」，設定語氣溫暖，提供具體親師對話鷹架。",
+            "日常組": "🤖 【Gem 設定建議】建立「精打細算旅遊達人」，設定專精交通規則與在地美食推薦。"
         };
 
-        // DOM 元素選取
-        const groupSelect = document.getElementById('group-select');
-        const checkboxes = document.querySelectorAll('.task-checkbox');
+        // DOM 元素
+        const coverPage = document.getElementById('cover-page');
+        const mainApp = document.getElementById('main-app');
+        const coverGroupSelect = document.getElementById('cover-group-select');
+        const enterBtn = document.getElementById('enter-btn');
+        const displayGroupBadge = document.getElementById('display-group-badge');
         
         const task1HintBox = document.getElementById('task1-hint');
         const task1HintText = document.getElementById('task1-hint-text');
-        
         const task5HintBox = document.getElementById('task5-hint');
         const task5HintText = document.getElementById('task5-hint-text');
 
+        // Modal 元素
+        const modal = document.getElementById('help-modal');
+        const modalContent = document.getElementById('help-modal-content');
+        const modalBody = document.getElementById('help-body');
+        const closeModalBtns = [document.getElementById('close-modal'), document.getElementById('close-modal-btn')];
+        const sosBtns = document.querySelectorAll('.sos-btn');
+
+        // 進度與計時器元素
+        const checkboxes = document.querySelectorAll('.task-checkbox');
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
         const successBanner = document.getElementById('success-banner');
         
-        // 計時器邏輯
+        // --- 1. 頁面切換邏輯 (封面 -> 任務板) ---
+        enterBtn.addEventListener('click', () => {
+            const group = coverGroupSelect.value;
+            if (!group) {
+                alert("請先選擇您的組別，才能為您派發專屬任務喔！");
+                coverGroupSelect.focus();
+                return;
+            }
+
+            // 更新面板組別與提示
+            displayGroupBadge.textContent = `🎯 當前身份：${group}`;
+            task1HintText.textContent = groupHints[group];
+            task1HintBox.classList.remove('hidden');
+            task5HintText.textContent = gemHints[group];
+            task5HintBox.classList.remove('hidden');
+
+            // 轉場動畫
+            coverPage.classList.add('fade-out');
+            setTimeout(() => {
+                coverPage.style.display = 'none';
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('fade-in');
+            }, 400); // 配合動畫時間
+        });
+
+        // --- 2. SOS Modal 邏輯 ---
+        function openModal(taskId) {
+            modalBody.innerHTML = helpContents[taskId] || "<p>查無相關說明。</p>";
+            modal.classList.remove('hidden');
+            // 延遲一點點加 class 以觸發 CSS 動畫
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // 配合 transition 時間
+        }
+
+        sosBtns.forEach(btn => {
+            // 阻止點擊按鈕時觸發 label 的 checkbox 切換
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                const taskId = btn.getAttribute('data-task');
+                openModal(taskId);
+            });
+        });
+
+        closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
+        // 點擊背景也可關閉
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+
+        // --- 3. 計時器邏輯 ---
         let timeLeft = 25 * 60; 
         let timerInterval = null;
         let isRunning = false;
@@ -277,46 +486,18 @@
                         timerBtn.textContent = '已結束';
                         timerBtn.disabled = true;
                         timerBtn.classList.replace('bg-blue-600', 'bg-gray-500');
-                        timerBtn.classList.replace('hover:bg-blue-700', 'hover:bg-gray-600');
                     }
                 }, 1000);
                 timerBtn.textContent = '暫停';
                 timerBtn.classList.replace('bg-blue-600', 'bg-red-600');
                 timerBtn.classList.replace('hover:bg-blue-700', 'hover:bg-red-700');
-                // 如果是從綠色(繼續)按過來
-                if(timerBtn.classList.contains('bg-green-600')) {
-                    timerBtn.classList.replace('bg-green-600', 'bg-red-600');
-                    timerBtn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
-                }
             }
             isRunning = !isRunning;
         });
 
-        // 處理組別選擇連動
-        groupSelect.addEventListener('change', (e) => {
-            const group = e.target.value;
-            
-            // 更新任務 1 提示
-            if (groupHints[group]) {
-                task1HintText.textContent = groupHints[group];
-                task1HintBox.classList.remove('hidden');
-            } else {
-                task1HintBox.classList.add('hidden');
-            }
-
-            // 更新任務 5 提示
-            if (gemHints[group]) {
-                task5HintText.textContent = gemHints[group];
-                task5HintBox.classList.remove('hidden');
-            } else {
-                task5HintBox.classList.add('hidden');
-            }
-        });
-
-        // 處理勾選進度邏輯與樣式
+        // --- 4. 勾選進度邏輯 ---
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
-                // 卡片視覺回饋
                 const card = this.closest('.task-card');
                 const title = card.querySelector('.task-title');
                 const desc = card.querySelector('.task-desc');
@@ -331,7 +512,7 @@
                     desc.classList.remove('task-checked-text');
                 }
 
-                // 計算並更新進度條
+                // 計算進度
                 const totalCount = checkboxes.length;
                 const checkedCount = document.querySelectorAll('.task-checkbox:checked').length;
                 const percentage = (checkedCount / totalCount) * 100;
@@ -339,16 +520,14 @@
                 progressBar.style.width = `${percentage}%`;
                 progressText.textContent = `${checkedCount}/${totalCount}`;
 
-                // 若全數完成，顯示慶祝橫幅
+                // 慶祝橫幅
                 if (checkedCount === totalCount) {
                     successBanner.classList.remove('hidden');
                     successBanner.classList.add('flex');
-                    // 觸發進場動畫
                     setTimeout(() => {
                         successBanner.classList.remove('scale-95', 'opacity-0');
                         successBanner.classList.add('scale-100', 'opacity-100');
                     }, 50);
-                    // 畫面自動平滑捲動至橫幅
                     setTimeout(() => {
                         successBanner.scrollIntoView({ behavior: 'smooth', block: 'end' });
                     }, 300);
@@ -358,7 +537,7 @@
                     setTimeout(() => {
                         successBanner.classList.add('hidden');
                         successBanner.classList.remove('flex');
-                    }, 500); // 等待動畫結束後隱藏
+                    }, 500);
                 }
             });
         });
